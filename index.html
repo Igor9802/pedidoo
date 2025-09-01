@@ -1,0 +1,637 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Romântico</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Montserrat', Arial, sans-serif;
+            background: var(--bg-gradient, linear-gradient(135deg, #ffe0ec 0%, #fff6e0 100%));
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        :root {
+            --bg-gradient: linear-gradient(135deg, #ffe0ec 0%, #fff6e0 100%);
+            --container-bg: rgba(255,255,255,0.95);
+            --text-color: #b71c50;
+            --button-bg: linear-gradient(90deg, #e91e63 60%, #ff80ab 100%);
+            --button-hover: linear-gradient(90deg, #d81b60 60%, #ffb6d5 100%);
+            --question-bg: #fff0f6;
+        }
+        body.dark {
+            --bg-gradient: linear-gradient(135deg, #232526 0%, #414345 100%);
+            --container-bg: rgba(40,40,50,0.98);
+            --text-color: #fff;
+            --button-bg: linear-gradient(90deg, #232526 60%, #e91e63 100%);
+            --button-hover: linear-gradient(90deg, #414345 60%, #ffb6d5 100%);
+            --question-bg: #2d2d3a;
+        }
+        .container {
+            max-width: 420px;
+            width: 95vw;
+            background: var(--container-bg);
+            padding: 32px 24px 24px 24px;
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(233,30,99,0.10), 0 1.5px 8px rgba(0,0,0,0.07);
+            margin: 32px 0 24px 0;
+            position: relative;
+        }
+        h1 {
+            color: var(--text-color);
+            text-align: center;
+            margin-bottom: 18px;
+            font-size: 2.1em;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+        .theme-toggle {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: var(--text-color);
+            transition: color 0.3s;
+        }
+        .music-player {
+            background: linear-gradient(90deg, #1DB954 60%, #1ed760 100%);
+            padding: 14px 0 10px 0;
+            border-radius: 12px;
+            margin-bottom: 18px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(30,185,84,0.10);
+        }
+        .music-player audio {
+            width: 90%;
+            max-width: 320px;
+            outline: none;
+        }
+        #start-screen p {
+            font-size: 1.1em;
+            color: var(--text-color);
+            margin-bottom: 18px;
+        }
+        .slideshow-container {
+            position: relative;
+            width: 100%;
+            height: 250px; /* Altura maior para o slideshow */
+            margin-bottom: 25px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            background: linear-gradient(135deg, #ffe0ec 0%, #fff6e0 100%); /* Fundo suave */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .slideshow-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Mostra a imagem inteira, sem cortar o rosto */
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: #fff0f6;
+        }
+        .slideshow-image.active {
+            opacity: 1;
+        }
+        .quiz-progress-container {
+            width: 100%;
+            height: 12px;
+            background-color: #f0f0f0;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .quiz-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #1DB954 0%, #1ed760 100%);
+            border-radius: 6px;
+            transition: width 0.5s ease-out;
+        }
+        .question-counter {
+            text-align: center;
+            color: var(--text-color);
+            font-size: 0.95em;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        .question {
+            background: var(--question-bg);
+            border-radius: 12px;
+            padding: 18px 14px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 8px rgba(233,30,99,0.07);
+            font-size: 1.15em;
+            color: var(--text-color);
+            font-weight: 600;
+            text-align: center;
+            letter-spacing: 0.5px;
+            transition: background 0.3s;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 10px;
+        }
+        button, .theme-toggle, #download-card-btn, #back-btn {
+            outline: none;
+        }
+        button:focus, .theme-toggle:focus, #download-card-btn:focus, #back-btn:focus {
+            box-shadow: 0 0 0 3px #ffb6d5, 0 2px 8px rgba(233,30,99,0.08);
+            outline: 2px solid #e91e63;
+        }
+        button {
+            background: var(--button-bg);
+            color: white;
+            border: none;
+            padding: 12px 0;
+            border-radius: 24px;
+            cursor: pointer;
+            font-size: 1.08em;
+            font-family: 'Montserrat', Arial, sans-serif;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(233,30,99,0.08);
+            transition: background 0.2s, transform 0.2s, color 0.2s;
+        }
+        button:hover, button:focus {
+            background: var(--button-hover);
+            transform: scale(1.04);
+        }
+        button.correct {
+            background: linear-gradient(90deg, #4CAF50 60%, #8bc34a 100%); /* Green for correct */
+        }
+        button.incorrect {
+            background: linear-gradient(90deg, #F44336 60%, #ff7961 100%); /* Red for incorrect */
+        }
+        button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        .hidden {
+            display: none;
+        }
+        .final-message {
+            text-align: center;
+            font-size: 1.18em;
+            color: var(--text-color);
+            margin-top: 18px;
+            background: linear-gradient(135deg, #fff6e0 0%, #ffe0ec 100%);
+            border-radius: 24px;
+            padding: 28px 18px 18px 18px;
+            box-shadow: 0 4px 24px rgba(233,30,99,0.13);
+            position: relative;
+            max-width: 420px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        body.dark .final-message {
+            background: linear-gradient(135deg, #232526 0%, #414345 100%);
+            color: #fff;
+        }
+        .card-title {
+            font-size: 1.25em;
+            font-weight: 700;
+            color: #e91e63;
+            margin-bottom: 18px;
+            letter-spacing: 1px;
+        }
+        body.dark .card-title {
+            color: #ffb6d5;
+        }
+        .final-message p, .final-message span, .final-message b {
+            color: inherit !important;
+        }
+        #download-card-btn {
+            background: linear-gradient(90deg, #e91e63 60%, #ff80ab 100%);
+            color: #fff;
+            border: 2px solid #fff0f6;
+            border-radius: 24px;
+            font-size: 1em;
+            font-weight: 600;
+            padding: 10px 28px;
+            margin: 10px 0 0 0;
+            box-shadow: 0 2px 8px rgba(233,30,99,0.10);
+            transition: background 0.2s, color 0.2s, transform 0.2s;
+            cursor: pointer;
+        }
+        #download-card-btn:hover, #download-card-btn:focus {
+            background: linear-gradient(90deg, #d81b60 60%, #ffb6d5 100%);
+            color: #fff0f6;
+            transform: scale(1.04);
+        }
+        .final-message h2 {
+            margin-top: 0;
+            color: var(--text-color);
+        }
+        .balloons {
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 1000;
+            left: 0; top: 0;
+        }
+        .balloon {
+            position: absolute;
+            width: 32px;
+            height: 44px;
+            background-color: #e91e63;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            animation: float 4s ease-in-out infinite;
+            opacity: 0.7;
+        }
+        @keyframes float {
+            0% { transform: translateY(100vh) scale(0.7); opacity: 0.7; }
+            100% { transform: translateY(-100vh) scale(1.1); opacity: 1; }
+        }
+        @media (max-width: 600px) {
+            .container { padding: 12vw 2vw 6vw 2vw; }
+            h1 { font-size: 1.3em; }
+        }
+        .confetti {
+            pointer-events: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 2000;
+        }
+        .confetti-piece {
+            position: absolute;
+            width: 12px;
+            height: 18px;
+            border-radius: 3px;
+            opacity: 0.8;
+            animation: confetti-fall 2.5s linear forwards;
+        }
+        @keyframes confetti-fall {
+            0% { transform: translateY(-40px) rotate(0deg); }
+            100% { transform: translateY(100vh) rotate(360deg); }
+        }
+        .fade {
+            opacity: 0;
+            transition: opacity 0.6s;
+        }
+        .fade.show {
+            opacity: 1;
+        }
+        #back-btn {
+            background: linear-gradient(90deg, #232526 60%, #e91e63 100%);
+            color: #fff;
+            border: 2px solid #fff0f6;
+            border-radius: 24px;
+            font-size: 1em;
+            font-weight: 600;
+            padding: 10px 28px 10px 18px;
+            margin-right: 10px;
+            box-shadow: 0 2px 8px rgba(30,30,30,0.10);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s, color 0.2s, transform 0.2s;
+        }
+        #back-btn:hover, #back-btn:focus {
+            background: linear-gradient(90deg, #414345 60%, #e91e63 100%);
+            color: #ffb6d5;
+            transform: scale(1.04);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="theme-toggle" id="theme-toggle" title="Alternar tema">🌙</button>
+        <h1>💖 Quiz Romântico 💖</h1>
+        <div class="music-player">
+            <audio id="background-music" loop>
+                <source src="musica_fundo.mp3" type="audio/mpeg">
+                Seu navegador não suporta o elemento de áudio.
+            </audio>
+        </div>
+        <div id="start-screen">
+            <div class="slideshow-container">
+                <img id="slideshow-image" class="slideshow-image" src="" alt="Foto especial do casal, carrossel de memórias românticas">
+            </div>
+            <p>Prepare-se para reviver memórias e responder perguntas sobre a gente!</p>
+            <button onclick="quizApp.startQuiz()">Iniciar Quiz</button>
+        </div>
+        <div id="quiz-screen" class="hidden fade show">
+            <div class="quiz-progress-container">
+                <div class="quiz-progress-bar" id="quiz-progress-bar"></div>
+            </div>
+            <div id="question-counter" class="question-counter"></div>
+            <div id="question-container" class="question"></div>
+            <div id="options-container" class="options"></div>
+            <div style="display: flex; justify-content: flex-start; margin-top: 10px;">
+                <button id="back-btn" style="min-width: 90px; display: none;" aria-label="Voltar para a pergunta anterior"><span style="font-size:1.2em;">&#8592;</span> Voltar</button>
+            </div>
+        </div>
+        <div id="final-screen" class="hidden">
+            <div class="final-message" id="final-message">
+                <div class="card-title">Cartão do Quiz Romântico</div>
+                <h2>Uma Pergunta Muito Importante...</h2>
+                <p id="final-text"></p>
+                <button onclick="quizApp.restartQuiz()" aria-label="Recomeçar o quiz">Recomeçar</button>
+                <button id="download-card-btn" onclick="quizApp.downloadCard()" aria-label="Baixar cartão de resultado do quiz">Baixar Cartão</button>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script>
+        const quizApp = {
+            questions: [
+                {
+                    question: "Se pudéssemos viajar agora, qual seria nosso destino?",
+                    options: ["Fernando de Noronha", "Porto de Galinha", "Barra de São Miguel", "Gramado"],
+                    correctAnswer: "",
+                    acceptAny: true
+                },
+                {
+                    question: "Onde nos conhecemos?",
+                    options: ["Instagram", "Facebook", "Faculdade", "Trabalho"],
+                    correctAnswer: "Instagram",
+                    acceptAny: false
+
+                },
+                {
+                    question: "Me mandava uma foto bem gostosa ?",
+                    options: ["Peito", "BCT", "Corpo inteiro", "Não mandava"],
+                    correctAnswer: "",
+                    acceptAny: true
+                },
+                {
+                    question: "Qual apelido carinhoso eu te chamo?",
+                    options: ["Amor", "Fofa", "Linda", "Gatinha"],
+                    correctAnswer: "Amor",
+                    acceptAny: false
+                },
+                 {
+                    question: "Seu namorado e pikudo?",
+                    options: ["Sim", "Não", "Talvez", "Muito"],
+                    correctAnswer: "",
+                    acceptAny: true 
+                },
+                {
+                    question: "Se eu aparecesse com chocolate e flores, o que você faria?",
+                    options: ["Me daria 'um beijo 😘'", "Diria 'Ai meu Deus!'", "Me chamaria de fofo(a)", "Todas as anteriores!"],
+                    correctAnswer: "Todas as anteriores!",
+                    acceptAny: true
+                },
+                {
+                    question: "Se eu dissesses que tenho uma pergunta muito importante, você...",
+                    options: ["Ficaria curiosa(o)", "Pensaria 'vem bomba aí' 🤭", "Diria 'Pergunta logo!'", "Saberia que é sobre a gente..."],
+                    correctAnswer: "Saberia que é sobre a gente...",
+                    acceptAny: true
+                },
+                {
+                    question: "Agora a mais difícil: você aceita viver muitas aventuras e amores comigo?",
+                    options: ["Sim", "Óbvio", "Lógico", "Nasci pra isso! 💘"],
+                    correctAnswer: "Nasci pra isso! 💘",
+                    acceptAny: true
+                }
+            ],
+            currentQuestionIndex: 0,
+            score: 0,
+            shuffledQuestions: [],
+            imagePaths: [
+                'img/Foto1.jpg',
+                'img/Foto2.jpg',
+                'img/Foto3.jpg',
+                'img/Foto4.jpg',
+                'img/Foto5.jpg'
+                // Adicione mais caminhos de imagem aqui, se tiver mais fotos
+                // Coloque suas fotos na pasta 'img' dentro do projeto
+            ],
+            currentImageIndex: 0,
+            slideshowInterval: null,
+
+            init: function() {
+                this.startSlideshow();
+            },
+
+            startSlideshow: function() {
+                const slideshowImage = document.getElementById('slideshow-image');
+                if (this.imagePaths.length > 0) {
+                    slideshowImage.src = this.imagePaths[this.currentImageIndex];
+                    slideshowImage.classList.add('active');
+
+                    this.slideshowInterval = setInterval(() => {
+                        slideshowImage.classList.remove('active');
+                        setTimeout(() => {
+                            this.currentImageIndex = (this.currentImageIndex + 1) % this.imagePaths.length;
+                            slideshowImage.src = this.imagePaths[this.currentImageIndex];
+                            slideshowImage.classList.add('active');
+                        }, 1500); // Tempo para a transição de saída da opacidade
+                    }, 10000); // 10 segundos para trocar a imagem
+                }
+            },
+
+            stopSlideshow: function() {
+                if (this.slideshowInterval) {
+                    clearInterval(this.slideshowInterval);
+                    this.slideshowInterval = null;
+                }
+            },
+
+            startQuiz: function() {
+                this.stopSlideshow(); // Para o slideshow ao iniciar o quiz
+                document.getElementById('start-screen').classList.add('hidden');
+                document.getElementById('quiz-screen').classList.remove('hidden');
+                this.shuffledQuestions = [...this.questions];
+                this.currentQuestionIndex = 0;
+                this.score = 0;
+                this.showQuestion();
+
+                const backgroundMusic = document.getElementById('background-music');
+                if (backgroundMusic) {
+                    backgroundMusic.play().catch(e => console.error("Erro ao tentar tocar a música:", e));
+                }
+            },
+
+            showQuestion: function() {
+                const question = this.shuffledQuestions[this.currentQuestionIndex];
+                const questionContainer = document.getElementById('question-container');
+                const optionsContainer = document.getElementById('options-container');
+                const quizProgressBar = document.getElementById('quiz-progress-bar');
+                const questionCounterElement = document.getElementById('question-counter');
+                const quizScreen = document.getElementById('quiz-screen');
+                const backBtn = document.getElementById('back-btn');
+
+                // Fade out
+                quizScreen.classList.remove('show');
+                setTimeout(() => {
+                    // Atualiza barra e texto
+                    const progress = (this.currentQuestionIndex / this.questions.length) * 100;
+                    quizProgressBar.style.width = `${progress}%`;
+                    questionCounterElement.textContent = `Pergunta ${this.currentQuestionIndex + 1} de ${this.questions.length}`;
+
+                    questionContainer.innerHTML = `${question.question}`;
+                    optionsContainer.innerHTML = '';
+
+                    question.options.forEach(option => {
+                        const button = document.createElement('button');
+                        button.textContent = option;
+                        button.onclick = () => this.checkAnswer(option, button);
+                        optionsContainer.appendChild(button);
+                    });
+                    // Exibe ou esconde o botão Voltar
+                    if (this.currentQuestionIndex > 0) {
+                        backBtn.style.display = 'inline-block';
+                    } else {
+                        backBtn.style.display = 'none';
+                    }
+                    backBtn.onclick = () => this.goBack();
+                    // Fade in
+                    setTimeout(() => quizScreen.classList.add('show'), 50);
+                }, 400);
+            },
+
+            checkAnswer: function(selectedAnswer, selectedButton) {
+                const question = this.shuffledQuestions[this.currentQuestionIndex];
+                const isCorrect = question.acceptAny || selectedAnswer === question.correctAnswer;
+
+                Array.from(document.getElementById('options-container').children).forEach(button => {
+                    button.disabled = true;
+                });
+
+                if (isCorrect) {
+                    this.score++;
+                    selectedButton.classList.add('correct');
+                } else {
+                    selectedButton.classList.add('incorrect');
+                    Array.from(document.getElementById('options-container').children).forEach(button => {
+                        if (button.textContent === question.correctAnswer) {
+                            button.classList.add('correct');
+                        }
+                    });
+                }
+
+                setTimeout(() => {
+                    this.currentQuestionIndex++;
+                    if (this.currentQuestionIndex < this.shuffledQuestions.length) {
+                        this.showQuestion();
+                    } else {
+                        this.showFinalScreen();
+                    }
+                }, 1000); // 1 segundo de atraso
+            },
+
+            showFinalScreen: function() {
+                document.getElementById('quiz-screen').classList.add('hidden');
+                document.getElementById('final-screen').classList.remove('hidden');
+
+                const finalText = document.getElementById('final-text');
+                const total = this.questions.length;
+                const acertos = this.score;
+                let mensagem = "";
+                let titulo = "Uma Pergunta Muito Importante...";
+                if (acertos === total) {
+                    mensagem = `Uau! Você acertou <b>todas as perguntas</b>! Mereço uma foto né meu amorzinho<br><br>Você é a pessoa mais especial do mundo para mim.<br>Por isso, cada dia com você é maravilhoso, inesquecível e se torna um tesouro no meu coração.<br><br><span style=\"font-size:1.3em; color:#e91e63\"><b>Quer namorar comigo? ❤️</b></span>`;
+                } else if (acertos >= Math.ceil(total/2)) {
+                    mensagem = `Parabéns! Você acertou <b>${acertos} de ${total}</b>Te amo meu amor<br><br>Você é a pessoa mais especial do mundo para mim.<br>Por isso, cada dia com você é maravilhoso, inesquecível e se torna um tesouro no meu coração.<br><br><span style=\"font-size:1.3em; color:#e91e63\"><b>Quer namorar comigo? ❤️</b></span>`;
+                } else {
+                    mensagem = `Você acertou <b>${acertos} de ${total}</b>. Mas não se preocupe, o importante é que você é única e especial para mim!<br><br>Você é a pessoa mais especial do mundo para mim.<br>Por isso, cada dia com você é maravilhoso, inesquecível e se torna um tesouro no meu coração.<br><br><span style=\"font-size:1.3em; color:#e91e63\"><b>Quer namorar comigo? ❤️</b></span>`;
+                }
+                document.querySelector('.final-message h2').innerHTML = titulo;
+                finalText.innerHTML = mensagem;
+                this.createBalloons();
+            },
+
+            restartQuiz: function() {
+                this.currentQuestionIndex = 0;
+                this.score = 0;
+                document.getElementById('final-screen').classList.add('hidden');
+                const balloonsContainer = document.querySelector('.balloons');
+                if (balloonsContainer) {
+                    balloonsContainer.remove();
+                }
+                this.startQuiz();
+            },
+
+            createBalloons: function() {
+                const container = document.createElement('div');
+                container.className = 'balloons';
+                document.body.appendChild(container);
+
+                for (let i = 0; i < 50; i++) {
+                    const balloon = document.createElement('div');
+                    balloon.className = 'balloon';
+                    balloon.style.left = `${Math.random() * 100}%`;
+                    balloon.style.animationDelay = `${Math.random() * 4}s`;
+                    balloon.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 75%)`;
+                    container.appendChild(balloon);
+                }
+                // Confete visual
+                this.createConfetti();
+            },
+
+            createConfetti: function() {
+                const confettiContainer = document.createElement('div');
+                confettiContainer.className = 'confetti';
+                document.body.appendChild(confettiContainer);
+                for (let i = 0; i < 80; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti-piece';
+                    confetti.style.left = `${Math.random() * 100}vw`;
+                    confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 70%)`;
+                    confetti.style.animationDelay = `${Math.random() * 1.5}s`;
+                    confettiContainer.appendChild(confetti);
+                }
+                setTimeout(() => {
+                    if (confettiContainer.parentNode) confettiContainer.parentNode.removeChild(confettiContainer);
+                }, 3500);
+            },
+
+            shareResult: function() {
+                // Função mantida para compatibilidade, mas não é mais usada pois o botão foi removido.
+            },
+
+            goBack: function() {
+                if (this.currentQuestionIndex > 0) {
+                    this.currentQuestionIndex--;
+                    this.score = Math.max(0, this.score - 1); // Reduz o score ao voltar
+                    this.showQuestion();
+                }
+            },
+
+            downloadCard: function() {
+                const finalMessage = document.getElementById('final-message');
+                html2canvas(finalMessage, {
+                    scale: 2,
+                    backgroundColor: null,
+                    logging: false,
+                    useCORS: true
+                }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = 'cartao_quiz_romantico.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                }).catch(error => {
+                    console.error('Erro ao gerar o cartão:', error);
+                    alert('Desculpe, não foi possível gerar o cartão. Tente novamente mais tarde.');
+                });
+            }
+        };
+
+        // Inicializa o quiz quando a página carregar
+        window.onload = function() {
+            quizApp.init();
+        };
+    </script>
+</body>
+</html>
